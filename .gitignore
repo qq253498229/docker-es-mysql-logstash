@@ -1,2 +1,4 @@
 .idea
 *.iml
+docker/es/data
+docker/mysql/data

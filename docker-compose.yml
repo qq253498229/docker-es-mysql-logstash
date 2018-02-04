@@ -1,0 +1,33 @@
+version: "3"
+services:
+  logstash:
+    build: ./docker/logstash
+    image: hahaha
+#    volumes:
+#      - "./docker/logstash/config/jdbc.conf:/usr/share/logstash/conf/jdbc.conf"
+#      - "./docker/logstash/jar/mysql-connector-java-5.1.45.jar:/usr/share/logstash/jar/mysql-connector-java-5.1.45.jar"
+    environment:
+      TZ: Asia/Shanghai
+  elasticsearch:
+    image: elasticsearch:5.6.6
+#    user: elasticsearch
+    volumes:
+      - "./docker/es/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml"
+      - "./docker/es/data:/usr/share/elasticsearch/data"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      TZ: Asia/Shanghai
+  mysql: # master
+    image: mysql:5.7.19
+    container_name: qrcode-mysql # 容器名
+    hostname: mysql
+    volumes: # 挂载 下边每行前边的`-`代表这个东西是数组的一个元素.就是说volumes属性的值是一个数组
+      - ./docker/mysql/data:/var/lib/mysql # mysql数据文件位置
+      - ./docker/mysql/conf:/etc/mysql/conf.d # mysql配置文件位置
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      TZ: Asia/Shanghai
