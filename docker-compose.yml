@@ -1,16 +1,27 @@
 version: "3"
 services:
-  logstash:
-    build: ./docker/logstash
-    image: hahaha
-#    volumes:
-#      - "./docker/logstash/config/jdbc.conf:/usr/share/logstash/conf/jdbc.conf"
-#      - "./docker/logstash/jar/mysql-connector-java-5.1.45.jar:/usr/share/logstash/jar/mysql-connector-java-5.1.45.jar"
+  es-head:
+    build: ./docker/head
+    image: registry.cn-beijing.aliyuncs.com/wangdali/elasticsearch-head
     environment:
       TZ: Asia/Shanghai
-  elasticsearch:
+    ports:
+      - "9100:9100"
+    depends_on:
+      - es
+  logstash:
+    build: ./docker/logstash
+    image: registry.cn-beijing.aliyuncs.com/wangdali/logstash
+    volumes:
+      - "./docker/logstash/config/mysql_pipelines.yml:/some/config-dir/mysql_pipelines.yml"
+      - "./docker/logstash/jar/mysql-connector-java-5.1.45.jar:/some/jar-dir/mysql-connector-java-5.1.45.jar"
+    environment:
+      TZ: Asia/Shanghai
+    depends_on:
+      - es
+      - mysql
+  es:
     image: elasticsearch:5.6.6
-#    user: elasticsearch
     volumes:
       - "./docker/es/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml"
       - "./docker/es/data:/usr/share/elasticsearch/data"

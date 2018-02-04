@@ -30,7 +30,7 @@ filter {
 
 output {
   elasticsearch {
-    hosts => ["elasticsearch:9200"]
+    hosts => ["es:9200"]
     index => "user"
     document_type => "user"
     document_id => "%{id}"
