@@ -1,5 +1,8 @@
 input {
+  stdin {
+  }
   jdbc {
+    type => "sync_user_new"
     jdbc_driver_library => "/some/jar-dir/mysql-connector-java-5.1.45.jar"
     jdbc_driver_class => "com.mysql.jdbc.Driver"
     jdbc_connection_string => "jdbc:mysql://mysql:3306/testes?useUnicode=true&characterEncoding=utf8&useSSL=false&autoReconnect=true&createDatabaseIfNotExist=true"
@@ -19,6 +22,27 @@ input {
     tracking_column => "id"
     statement => "SELECT id, password, username FROM user WHERE id > :sql_last_value"
   }
+  jdbc {
+    type => "sync_user_all"
+    jdbc_driver_library => "/some/jar-dir/mysql-connector-java-5.1.45.jar"
+    jdbc_driver_class => "com.mysql.jdbc.Driver"
+    jdbc_connection_string => "jdbc:mysql://mysql:3306/testes?useUnicode=true&characterEncoding=utf8&useSSL=false&autoReconnect=true&createDatabaseIfNotExist=true"
+    jdbc_user => "root"
+    jdbc_password => "root"
+    jdbc_default_timezone => "Asia/Shanghai"
+    jdbc_paging_enabled => true
+    jdbc_page_size => 100000
+    jdbc_fetch_size => 10000
+    connection_retry_attempts => 3
+    connection_retry_attempts_wait_time => 1
+    jdbc_pool_timeout => 5
+    lowercase_column_names => true
+    record_last_run => true
+    schedule => "*/2 * * * *"
+    use_column_value => true
+    tracking_column => "id"
+    statement => "SELECT id, password, username FROM user"
+  }
 }
 
 filter {
@@ -29,13 +53,20 @@ filter {
 }
 
 output {
-  elasticsearch {
-    hosts => ["es:9200"]
-    index => "user"
-    document_type => "user"
-    document_id => "%{id}"
+  if [type]=="sync_user_new" {
+    elasticsearch {
+      hosts => ["es:9200"]
+      index => "user"
+      document_type => "user"
+      document_id => "%{id}"
+    }
   }
-  stdout {
-    codec => json_lines
+  if [type]=="sync_user_all" {
+    elasticsearch {
+      hosts => ["es:9200"]
+      index => "user"
+      document_type => "user"
+      document_id => "%{id}"
+    }
   }
 }
